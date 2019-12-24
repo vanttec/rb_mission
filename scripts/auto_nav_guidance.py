@@ -4,8 +4,8 @@ import rospy
 from std_msgs.msg import String
 from std_msgs.msg import Float64
 from std_msgs.msg import Int32
-from custom_msgs.msg import ObjDetected
-from custom_msgs.msg import ObjDetectedList
+from custom_msgs.msg import obj_detected
+from custom_msgs.msg import obj_detected_list
 from geometry_msgs.msg import Pose2D
 import numpy as np
 import math
@@ -26,7 +26,7 @@ class AutoNav:
         self.desired_heading = 0
 
         rospy.Subscriber("/vectornav/ins_2d/ins_pose", Pose2D, self.ins_pose_callback)
-        rospy.Subscriber('/usv_perception/yolo_zed/objects_detected', ObjDetectedList, self.objs_callback)
+        rospy.Subscriber('/usv_perception/yolo_zed/objects_detected', obj_detected_list, self.objs_callback)
         self.d_speed_pub = rospy.Publisher("/guidance/desired_speed", Float64, queue_size=10)
         self.d_heading_pub = rospy.Publisher("/guidance/desired_heading", Float64, queue_size=10)
         self.status_pub = rospy.Publisher("/status", Int32, queue_size=10)
