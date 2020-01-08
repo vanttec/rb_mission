@@ -43,7 +43,7 @@ class AutoNav:
         self.obj_list = []
         for i in range(data.len):
             if str(data.objects[i].clase) == 'marker':
-                self.obj_list.append({'X' : data.objects[i].X + 0.55, 'Y' : data.objects[i].Y, 'color' : data.objects[i].color, 'class' : data.objects[i].clase})
+                self.obj_list.append({'X' : data.objects[i].X + self.offset, 'Y' : data.objects[i].Y, 'color' : data.objects[i].color, 'class' : data.objects[i].clase})
 
     def punto_medio(self):
         x_list = []
@@ -88,25 +88,25 @@ class AutoNav:
         if (abs(self.ned_alpha) > (math.pi)):
             self.ned_alpha = (self.ned_alpha/abs(self.ned_alpha))*(abs(self.ned_alpha)-2*math.pi)
 
-        xm, ym = self.gate_to_body(2,0,alpha,xc,yc)
+        xm, ym = self.gate_to_body(3,0,alpha,xc,yc)
 
         self.target_x, self.target_y = self.body_to_ned(xm, ym)
         
         obj = Float32MultiArray()
-        obj.layout.data_offset = 5
-        obj.data = [xc,yc,xm,ym,2]
+        obj.layout.data_offset = 7
+        obj.data = [0, 0, xc, yc, xm, ym, 2]
 
-        self.path_pub.publish(obj)
+        self.desired(obj)
 
     def farther(self):
         
         self.target_x, self.target_y = self.gate_to_ned(1, 0, self.ned_alpha, self.target_x, self.target_y)
         
         obj = Float32MultiArray()
-        obj.layout.data_offset = 3
-        obj.data = [self.target_x,self.target_y,0]
+        obj.layout.data_offset = 5
+        obj.data = [self.NEDx, self.NEDy, self.target_x, self.target_y, 0]
 
-        self.path_pub.publish(obj)
+        self.desired(obj)
 
     def gate_to_body(self, gate_x2, gate_y2, alpha, body_x1, body_y1):
         p = np.array([[gate_x2],[gate_y2]])
@@ -137,6 +137,10 @@ class AutoNav:
         ned_y2 = n[1] + ned_y1
 
         return (ned_x2, ned_y2)
+
+    def desired(self, obj):
+
+    	self.path_pub.publish(obj)
 
 
 def main():
@@ -173,6 +177,7 @@ def main():
                 while not rospy.is_shutdown() and (len(E.obj_list)) < 2:
                     if rospy.Time.now().secs - initTime > 1:
                         E.farther()
+                        rate.sleep()
                         break
 
         elif E.state == 2:
