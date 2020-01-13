@@ -93,8 +93,8 @@ class AutoNav:
         self.target_x, self.target_y = self.body_to_ned(xm, ym)
         
         obj = Float32MultiArray()
-        obj.layout.data_offset = 7
-        obj.data = [0, 0, xc, yc, xm, ym, 2]
+        obj.layout.data_offset = 5
+        obj.data = [xc, yc, xm, ym, 2]
 
         self.desired(obj)
 
@@ -103,8 +103,8 @@ class AutoNav:
         self.target_x, self.target_y = self.gate_to_ned(1, 0, self.ned_alpha, self.target_x, self.target_y)
         
         obj = Float32MultiArray()
-        obj.layout.data_offset = 5
-        obj.data = [self.NEDx, self.NEDy, self.target_x, self.target_y, 0]
+        obj.layout.data_offset = 3
+        obj.data = [self.target_x, self.target_y, 0]
 
         self.desired(obj)
 

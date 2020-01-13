@@ -113,8 +113,8 @@ class SpeedCh:
         self.gate_x, self.gate_y = self.body_to_ned(xc, yc)
         
         obj = Float32MultiArray()
-        obj.layout.data_offset = 7
-        obj.data = [0, 0, xc, yc, xm, ym, 2]
+        obj.layout.data_offset = 5
+        obj.data = [xc, yc, xm, ym, 2]
 
         self.desired(obj)
         
@@ -129,7 +129,7 @@ class SpeedCh:
         w3 = [v_x,v_y-radio]
 
         obj = Float32MultiArray()
-        obj.layout.data_offset = 13
+        obj.layout.data_offset = 11
         
         w1_x, w1_y = self.body_to_ned(w1[0],w1[1])
         w2_x, w2_y = self.body_to_ned(w2[0],w2[1])
@@ -138,7 +138,7 @@ class SpeedCh:
         w5_x, w5_y = self.gate_to_ned(-3, 0, self.ned_alpha, self.gate_x, self.gate_y)
 
         #obj.data = [(self.gps_point_trans(w1[0],w1[1]))[0],(self.gps_point_trans(w1[0],w1[1]))[1],(self.gps_point_trans(w2[0],w2[1]))[0],(self.gps_point_trans(w2[0],w2[1]))[1],(self.gps_point_trans(w3[0],w3[1]))[0],(self.gps_point_trans(w3[0],w3[1]))[1],self.start_gps[0],self.start_gps[1],1]
-        obj.data = [self.NEDx, self.NEDy, w1_x, w1_y, w2_x, w2_y, w3_x, w3_y, self.gate_x, self.gate_y, w5_x, w5_y, 0]
+        obj.data = [w1_x, w1_y, w2_x, w2_y, w3_x, w3_y, self.gate_x, self.gate_y, w5_x, w5_y, 0]
 
         self.desired(obj)
 
@@ -147,8 +147,8 @@ class SpeedCh:
         self.target_x, self.target_y = self.gate_to_ned(1.5, 0, self.ned_alpha, self.target_x, self.target_y)
         
         obj = Float32MultiArray()
-        obj.layout.data_offset = 5
-        obj.data = [self.NEDx, self.NEDy, self.target_x, self.target_y, 0]
+        obj.layout.data_offset = 3
+        obj.data = [self.target_x, self.target_y, 0]
 
         self.desired(obj)
 
@@ -213,13 +213,17 @@ def main():
 
         elif E.state == 1:
             E.test.publish(E.state)
-            for i in range(len(self.obj_list)):
-                x_list.append(self.obj_list[i]['X'])
-                y_list.append(self.obj_list[i]['Y'])
-                class_list.append(self.obj_list[i]['class'])
+            x_list = []
+            y_list = []
+            class_list = []
+            distance_list = []
+            for i in range(len(E.obj_list)):
+                x_list.append(E.obj_list[i]['X'])
+                y_list.append(E.obj_list[i]['Y'])
+                class_list.append(E.obj_list[i]['class'])
                 distance_list.append(math.pow(x_list[i]**2 + y_list[i]**2, 0.5))
                 ind_0 = np.argsort(distance_list)[0]
-            if len(E.obj_list) >= 1 and (str(self.obj_list[ind_0]['color']) == 'blue'):
+            if len(E.obj_list) >= 1 and (str(E.obj_list[ind_0]['color']) == 'blue'):
                 E.state = 2
             else:
                 initTime = rospy.Time.now().secs
@@ -231,15 +235,19 @@ def main():
 
         elif E.state == 2:
             E.test.publish(E.state)
-            for i in range(len(self.obj_list)):
-                x_list.append(self.obj_list[i]['X'])
-                y_list.append(self.obj_list[i]['Y'])
-                class_list.append(self.obj_list[i]['class'])
+            x_list = []
+            y_list = []
+            class_list = []
+            distance_list = []
+            for i in range(len(E.obj_list)):
+                x_list.append(E.obj_list[i]['X'])
+                y_list.append(E.obj_list[i]['Y'])
+                class_list.append(E.obj_list[i]['class'])
                 distance_list.append(math.pow(x_list[i]**2 + y_list[i]**2, 0.5))
                 ind_0 = np.argsort(distance_list)[0]
-            if (len(obj_list_curr) >= 1) and (self.obj_list[ind_0]['X'] < 8):
-                v_x = obj_list_curr[0]['X']
-                v_y = obj_list_curr[0]['Y']
+            if (len(E.obj_list) >= 1) and (E.obj_list[ind_0]['X'] < 8):
+                v_x = E.obj_list[0]['X']
+                v_y = E.obj_list[0]['Y']
                 E.state = 3
             else:
                 initTime = rospy.Time.now().secs
@@ -249,8 +257,13 @@ def main():
                         rate.sleep()
                         break
                 
-        if E.state == 3:
+        elif E.state == 3:
+            E.test.publish(E.state)
             E.waypoints_vuelta(v_x,v_y)
+            E.state = 4
+
+        elif E.state == 4:
+            E.test.publish(E.state)
             time.sleep(1)
             E.status_pub.publish(1)
 
